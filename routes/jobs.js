@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const router = express.Router();
-const user = require('./models/user'); // Changed variable name to avoid conflicts
+const user = require('../models/user'); // Changed variable name to avoid conflicts
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
