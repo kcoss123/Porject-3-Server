@@ -1,15 +1,10 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const companySchema = new mongoose.Schema({
     registrationType: {
         type: String,
         required: true,
         enum: ["user", "company"] // Ensure the value is either "user" or "company"
-    },
-    username: {
-        type: String,
-        required: true,
-        unique: true,
     },
     firstName: {
         type: String,
@@ -19,31 +14,53 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    companyName: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     email: {
         type: String,
         required: true,
+        unique: true,
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     password: {
         type: String,
         required: true,
+    },
+    phone: {
+        type: String,
+        required: false,
+        unique: false,
+        match: /^[0-9]{10}$/,
+    },
+    category: {
+        type: String,
+        required: true,
+    },
+    about: {
+        type: String,
+        required: false,
     },
     address: {
         street: {
             type: String,
             required: false,
         },
-        unit: {
-            type: String,
-        },
+        unit: String,
         city: {
             type: String,
             required: false,
         },
-        state: {
-            type: String,
-        },
+        state: String,
         zip: {
-            type: Number,
+            type: String,
             required: false,
         },
         country: {
@@ -55,12 +72,17 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    bids: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Bid"
+    }],
     updatedAt: {
         type: Date,
         default: Date.now,
     }
 });
 
-const user = mongoose.model("user", userSchema);
+// Create Company model
+const company = mongoose.model("company", companySchema);
 
-module.exports = user;
+module.exports = company;

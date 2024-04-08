@@ -1,14 +1,17 @@
-var express = require('express');
-var logger = require('morgan');
+const express = require('express');
+const logger = require('morgan');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const path = require('path');
 
-var cors = require('cors')
-var mongoose = require ('mongoose')
+const authRouter = require('./routes/auth');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const jobsRouter = require('./routes/jobs');
+const listRouter = require('./routes/list');
+const workordersRouter = require('./routes/workorders');
 
-// var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var authRouter = require('./routes/auth')
-
-var app = express();
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -19,21 +22,24 @@ app.enable('trust proxy');
 
 app.use(
     cors({
-      origin: [process.env.REACT_APP_URI]  // <== URL of our future React app
+        origin: [process.env.REACT_APP_URI] // <== URL of our future React app
     })
-  );
+);
 
-// app.use(
-//     cors()
-//   );
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/', indexRouter);
+
+app.use('/', indexRouter);
+app.use('/auth', authRouter);
 app.use('/users', usersRouter);
-app.use('/auth', authRouter)
+app.use('/jobs', jobsRouter);
+app.use('/list', listRouter);
+app.use('/workorders', workordersRouter);
 
 mongoose
-  .connect(process.env.MONGODB_URI)
-  .then((x) => console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`))
-  .catch((err) => console.error("Error connecting to mongo", err));
+    .connect(process.env.MONGODB_URI)
+    .then((x) => console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`))
+    .catch((err) => console.error("Error connecting to mongo", err));
 
 module.exports = app;
