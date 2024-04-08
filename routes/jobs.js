@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const router = express.Router();
-const User = require('../models/user'); // Changed variable name to avoid conflicts
+const user = require('./models/user'); // Changed variable name to avoid conflicts
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -23,12 +23,12 @@ router.post("/jobs", async (req, res) => {
     try {
         let jobs = [], bids = [];
         if (req.body.username) {
-            const foundUser = await User.findOne({ username: req.body.username }); // Changed variable name
-            jobs = await Job.find({ user: foundUser.id });
+            const foundUser = await user.findOne({ username: req.body.username }); // Changed variable name
+            jobs = await job.find({ user: foundUser.id });
         } else if (req.body.company) {
             const company = await company.findOne({ username: req.body.company });
-            jobs = await Job.find({ company: company.id });
-            bids = await Bid.find({ company: company.id });
+            jobs = await job.find({ company: company.id });
+            bids = await bid.find({ company: company.id });
         }
         const data = {
             jobs: jobs,
@@ -43,15 +43,15 @@ router.post("/jobs", async (req, res) => {
 // Get specific job
 router.post("/getjob", async (req, res) => {
     try {
-        const job = await Job.findById(req.body.jobid);
-        const foundUser = await User.findById(job.user); // Changed variable name
+        const job = await job.findById(req.body.jobid);
+        const foundUser = await user.findById(job.user); // Changed variable name
         let bid, bids;
         if (req.body.company) {
             const company = await company.findOne({ username: req.body.company });
-            bid = await Bid.findOne({ company: company.id, job: job.id });
+            bid = await bid.findOne({ company: company.id, job: job.id });
         }
         if (req.body.username) {
-            bids = await Bid.find({ job: job.id });
+            bids = await bid.find({ job: job.id });
         }
         const data = {
             job: job,
@@ -71,9 +71,9 @@ router.post("/deletejob", async (req, res) => {
         const thread = await Thread.findOne({ job: req.body.jobid });
         await Promise.all([
             Bid.deleteMany({ job: req.body.jobid }),
-            Message.deleteMany({ thread: thread.id }),
-            Thread.findByIdAndDelete(thread.id),
-            Job.findByIdAndDelete(req.body.jobid),
+            message.deleteMany({ thread: thread.id }),
+            thread.findByIdAndDelete(thread.id),
+            job.findByIdAndDelete(req.body.jobid),
         ]);
         res.status(200).send();
     } catch (error) {
@@ -90,7 +90,7 @@ router.post("/createjob", upload.array("files", 5), async (req, res) => {
         }
 
         // Find user by username
-        const foundUser = await User.findOne({ username: req.body.username }); // Changed variable name
+        const foundUser = await user.findOne({ username: req.body.username }); // Changed variable name
         if (!foundUser) {
             return res.status(400).send({ error: "User not found." });
         }
@@ -108,13 +108,13 @@ router.post("/createjob", upload.array("files", 5), async (req, res) => {
         let handymen = [];
         if (req.body.handymen && req.body.handymen.length > 0) {
             handymen = await Promise.all(req.body.handymen.map(async (handyman) => {
-                const company = await Company.findOne({ username: handyman.username });
+                const company = await company.findOne({ username: handyman.username });
                 return company ? company.id : null;
             }));
         }
 
         // Create job
-        const job = new Job({
+        const job = new job({
             title: req.body.title,
             description: req.body.desc,
             category: req.body.category,
@@ -127,7 +127,7 @@ router.post("/createjob", upload.array("files", 5), async (req, res) => {
 
         // Create threads
         await Promise.all(handymen.map(async (companyId) => {
-            const thread = new Thread({
+            const thread = new thread({
                 title: req.body.title,
                 user: foundUser.id, 
                 company: companyId,
@@ -156,13 +156,13 @@ router.post("/createjob", upload.array("files", 5), async (req, res) => {
 // Retrieve job messages
 router.post("/jobmessages", async (req, res) => {
     try {
-        const thread = await Thread.findOne({ job: req.body.jobid });
-        const job = await Job.findById(req.body.jobid);
+        const thread = await thread.findOne({ job: req.body.jobid });
+        const job = await job.findById(req.body.jobid);
         const user = await user.findById(job.user);
         const company = await company.findOne({ username: req.body.company });
         let messages = await Message.find({ thread: thread.id }).sort({ timestamp: 1 });
         if (!messages.length) {
-            const newThread = new Thread({
+            const newThread = new thread({
                 title: job.title,
                 user: job.user,
                 username: user.username,
@@ -172,7 +172,7 @@ router.post("/jobmessages", async (req, res) => {
                 jobName: job.title,
             });
             await newThread.save();
-            messages = await Message.find({ thread: newThread.id }).sort({ timestamp: 1 });
+            messages = await message.find({ thread: newThread.id }).sort({ timestamp: 1 });
         }
         const data = {
             messages: messages,
@@ -189,9 +189,9 @@ router.post("/jobmessages", async (req, res) => {
 router.post("/addjobmessage", async (req, res) => {
     try {
         const company = await company.findOne({ username: req.body.company });
-        const thread = await Thread.findOne({ job: req.body.jobid, company: company.id });
+        const thread = await thread.findOne({ job: req.body.jobid, company: company.id });
         const sender = req.body.username ? req.body.username : req.body.company;
-        const msg = new Message({
+        const msg = new message({
             content: {
                 text: req.body.newMsg,
             },
@@ -209,8 +209,8 @@ router.post("/addjobmessage", async (req, res) => {
 router.post("/addbid", async (req, res) => {
     try {
         const company = await company.findOne({ username: req.body.company });
-        const job = await Job.findById(req.body.jobid);
-        const bid = new Bid({
+        const job = await job.findById(req.body.jobid);
+        const bid = new bid({
             company: company.id,
             companyUser: company.username,
             companyName: company.companyName,
@@ -229,7 +229,7 @@ router.post("/addbid", async (req, res) => {
 // Accept bid
 router.post("/acceptbid", async (req, res) => {
     try {
-        const bid = await Bid.findById(req.body.acceptbid);
+        const bid = await bid.findById(req.body.acceptbid);
         bid.accepted = true;
         await bid.save();
         const job = await Job.findById(bid.job);
@@ -242,7 +242,7 @@ router.post("/acceptbid", async (req, res) => {
         job.bids = [];
         job.accepted = true;
         await Promise.all([
-            Bid.deleteMany({ job: job.id }),
+            bid.deleteMany({ job: job.id }),
             job.save(),
         ]);
         res.status(200).send(bid);
@@ -254,7 +254,7 @@ router.post("/acceptbid", async (req, res) => {
 // Delete bid
 router.post("/deletebid", async (req, res) => {
     try {
-        const bid = await Bid.findByIdAndDelete(req.body.bid._id);
+        const bid = await bid.findByIdAndDelete(req.body.bid._id);
         res.status(200).send(bid);
     } catch (error) {
         res.status(400).send({ error: "An error occurred." });
