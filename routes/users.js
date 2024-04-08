@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const User = require("../models/user");
+const user = require("../models/user");
 const Company = require("../models/company");
 const { Review } = require("../models/review");
 
@@ -29,7 +29,7 @@ router.post("/register", async (req, res) => {
         }
 
         // Check if the email is already registered
-        const emailExists = await User.findOne({ email });
+        const emailExists = await user.findOne({ email });
         if (emailExists) {
             console.log("Email already registered:", email);
             return res.status(400).json({ message: "Email is already registered." });
@@ -51,7 +51,7 @@ router.post("/register", async (req, res) => {
         if (registrationType === "user") {
             // User registration
             console.log("Performing user registration");
-            newUser = await User.create({
+            newUser = await user.create({
                 registrationType,
                 firstName,
                 lastName,

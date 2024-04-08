@@ -2,8 +2,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const User = require("../models/user");
-const Company = require("../models/company");
+const user = require("../models/user");
+const company = require("../models/company");
 const isAuthenticated = require("../middleware/isAuthenticated");
 
 const router = express.Router();
@@ -16,9 +16,9 @@ router.post("/login", async (req, res) => {
 
         // Determine whether to search in user or company model based on userType
         if (registrationType === 'user') {
-            foundUser = await User.findOne({ username });
+            foundUser = await user.findOne({ username });
         } else if (registrationType === 'company') {
-            foundUser = await Company.findOne({ username });
+            foundUser = await company.findOne({ username });
         } else {
             return res.status(400).send("Invalid user type");
         }
