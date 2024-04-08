@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const company = require("../models/company");
-const { user } = require("../models/user");
+const User = require("../models/user");
 const { Thread } = require("../models/thread");
 
 // Endpoint to list companies based on location and category

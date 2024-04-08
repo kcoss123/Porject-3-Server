@@ -1,5 +1,5 @@
-const { user } = require("../models/user");
-const { company } = require("../models/company");
+const user = require("../models/user");
+const company = require("../models/company");
 const { WorkOrder } = require("../models/workorder");
 const { Thread } = require("../models/thread");
 const { Message } = require("../models/message");
